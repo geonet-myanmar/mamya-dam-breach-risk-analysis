@@ -1,0 +1,4 @@
+scenario,description,Vw_Mm3,hw_m,Qp Froehlich (1995),Qp MacDonald & Langridge-Monopolis (1984),Qp USBR (1982),Qp Webby (1996),Qp_used_m3s,breach_width_m (Froehlich 2008),failure_time_h (Froehlich 2008)
+S1,Full breach at FSL (best estimate),86.4,32.7,10072.2,9041.1,12131.8,14458.9,11102.0,107.9,1.5
+S2,Partial breach (invert at mid-height),73.4,16.4,4064.7,6355.0,3365.3,5163.4,4614.0,100.3,2.3
+S3,Full breach at FSL (upper envelope),86.4,32.7,10072.2,9041.1,12131.8,14458.9,14458.9,140.3,1.5

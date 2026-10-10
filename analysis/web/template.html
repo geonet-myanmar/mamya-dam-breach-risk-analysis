@@ -1,0 +1,604 @@
+<title>Ma Mya Dam Break Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Myanmar:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>/*__LEAFLET_CSS__*/</style>
+<style>
+/* Layout: briefing sheet - masthead with the live dam status, a map-first working area, then evidence sections in one 76rem column. */
+:root{
+  --bg:#f4f6f7; --surface:#ffffff; --sunk:#eaeef1;
+  --ink:#16202a; --ink-2:#465462; --ink-3:#758391; --rule:#d8dee4;
+  --accent:#0d5874; --accent-soft:#e0edf3;
+  --map-bg:#eef1ef; --hs-filter:none;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --path:#16202a; --user:#eda100; --river:#7fa9cf; --bound:#6b7782;
+  --p1:#d03b3b; --p2:#ec835a; --p3:#fab219; --p4:#7d8a99; --p0:#a8b1ba;
+  --d1:#b7d3f6; --d2:#6da7ec; --d3:#2a78d6; --d4:#104281;
+  --a1:#7f2704; --a2:#b93d0b; --a3:#e2600f; --a4:#f6913f; --a5:#fbbd84; --a6:#fde1c4;
+  --f-display:"Archivo","Segoe UI",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Noto Sans Myanmar","Myanmar Text","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --f-mm:"Noto Sans Myanmar","Myanmar Text","Padauk",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f151a; --surface:#161f27; --sunk:#1c2731;
+  --ink:#e6ecf1; --ink-2:#adb9c4; --ink-3:#7e8b97; --rule:#2a3540;
+  --accent:#62b5d6; --accent-soft:#17303c;
+  --map-bg:#141b21; --hs-filter:invert(1);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --path:#f2f5f8; --user:#c98500; --river:#3f6f99; --bound:#8a96a1;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151a; --surface:#161f27; --sunk:#1c2731;
+  --ink:#e6ecf1; --ink-2:#adb9c4; --ink-3:#7e8b97; --rule:#2a3540;
+  --accent:#62b5d6; --accent-soft:#17303c;
+  --map-bg:#141b21; --hs-filter:invert(1);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --path:#f2f5f8; --user:#c98500; --river:#3f6f99; --bound:#8a96a1;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:76rem;margin:0 auto;padding-inline:clamp(16px,3vw,32px)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(1.9rem,4.2vw,3rem);font-weight:800;line-height:1.05}
+h2{font-size:clamp(1.35rem,2.4vw,1.75rem);font-weight:700}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:0;max-width:68ch}
+.mm{font-family:var(--f-mm)}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* masthead */
+.mast{border-bottom:1px solid var(--rule);background:var(--surface)}
+.mast .wrap{display:grid;gap:18px;padding-block:28px 22px}
+.lede{color:var(--ink-2);font-size:1.08rem}
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:0;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.status div{padding:10px 14px;border-right:1px solid var(--rule);display:grid;gap:2px;min-width:0}
+.status div:last-child{border-right:0}
+.status time{font-family:var(--f-mono);font-size:.8rem;color:var(--ink-3)}
+.status b{font-weight:600}
+.status .now{background:var(--accent-soft)}
+.caveat{font-size:.9rem;color:var(--ink-2);display:flex;gap:8px;align-items:flex-start}
+.caveat svg{flex:none;margin-top:3px}
+
+/* key figures */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:12px;padding-block:22px}
+.kpi{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;display:grid;gap:4px;align-content:start}
+.kpi .v{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,3vw,2.1rem);line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:.55em;font-weight:600;color:var(--ink-2)}
+.kpi .l{font-size:.92rem;color:var(--ink-2)}
+
+/* map */
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 19rem;gap:0;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--surface)}
+#map{height:min(78vh,760px);min-height:460px;background:var(--map-bg)}
+.panel{border-left:1px solid var(--rule);padding:16px;display:grid;gap:18px;align-content:start;overflow:auto;max-height:min(78vh,760px)}
+.panel fieldset{border:0;padding:0;margin:0;display:grid;gap:8px}
+.panel legend{padding:0;margin-bottom:6px}
+.seg{display:flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.seg button{flex:1;font:inherit;font-size:.9rem;font-weight:600;padding:7px 6px;border:0;border-right:1px solid var(--rule);background:var(--surface);color:var(--ink-2);cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.seg button .sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.scen-note{font-size:.85rem;color:var(--ink-2)}
+.chk{display:flex;gap:8px;align-items:center;font-size:.92rem;cursor:pointer}
+.chk input{accent-color:var(--accent);width:16px;height:16px}
+.key{display:grid;gap:5px;font-size:.85rem}
+.key .row{display:flex;gap:8px;align-items:center}
+.key .chip{width:22px;height:12px;border-radius:2px;flex:none}
+.key .dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--rule);flex:none}
+.key .ln{width:22px;height:0;border-top:3px solid var(--path);flex:none}
+.mapnote{font-size:.8rem;color:var(--ink-3)}
+
+/* leaflet theming */
+.leaflet-container{font-family:var(--f-body);background:var(--map-bg)}
+.hs-img{filter:var(--hs-filter)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--surface);color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.leaflet-popup-content{margin:12px 14px;font-size:.9rem;line-height:1.45;min-width:13rem}
+.leaflet-container a.leaflet-popup-close-button{color:var(--ink-3)}
+.leaflet-bar a{background:var(--surface);color:var(--ink);border-color:var(--rule)}
+.leaflet-control-attribution{background:var(--surface)!important;color:var(--ink-3)!important;font-size:10px}
+.leaflet-control-attribution a{color:var(--accent)}
+.leaflet-control-scale-line{background:var(--surface);color:var(--ink-2);border-color:var(--ink-2)}
+.pa{stroke:var(--path);fill:none}
+.pb{stroke:var(--path);fill:none;stroke-dasharray:7 5}
+.pu{stroke:var(--user);fill:none;stroke-opacity:.75}
+.riv{stroke:var(--river);fill:none}
+.tsb{stroke:var(--bound);fill:none;stroke-dasharray:4 4}
+.res{stroke:var(--accent);fill:var(--river);fill-opacity:.55}
+.cat{stroke:var(--accent);fill:none;stroke-dasharray:2 4}
+.vil{stroke:var(--surface);stroke-width:1.5}
+.vil.p1{fill:var(--p1)} .vil.p2{fill:var(--p2)} .vil.p3{fill:var(--p3)} .vil.p4{fill:var(--p4)} .vil.p0{fill:var(--p0);stroke-width:0}
+.fac{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.sta{fill:var(--surface);stroke:var(--path);stroke-width:1.5}
+.st-lbl{background:var(--surface);color:var(--ink);border:1px solid var(--rule);font-family:var(--f-mono);font-size:10.5px;padding:1px 5px;box-shadow:none;border-radius:3px}
+.st-lbl::before{display:none}
+.dam-ic{width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-bottom:19px solid var(--ink);filter:drop-shadow(0 0 1.5px var(--surface))}
+.pop h4{margin:0 0 2px;font-family:var(--f-mm);font-size:1.05rem}
+.pop .en{color:var(--ink-2);font-size:.85rem;margin-bottom:6px}
+.pop table{border-collapse:collapse;width:100%;font-size:.82rem}
+.pop td{padding:2px 4px;border-top:1px solid var(--rule)}
+.pop td:not(:first-child){text-align:right;font-family:var(--f-mono)}
+
+/* sections */
+section.sec{padding-block:44px 8px;display:grid;gap:18px}
+section.sec>header{display:grid;gap:6px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:20px;align-items:start}
+.two>*{min-width:0}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px;display:grid;gap:10px;min-width:0}
+.prose{display:grid;gap:12px;color:var(--ink)}
+.prose p{color:var(--ink)}
+ul.clean{margin:0;padding-left:1.1rem;display:grid;gap:6px;max-width:70ch}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+table.t{border-collapse:collapse;width:100%;font-size:.9rem}
+table.t th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);text-align:left;font-weight:500;padding:9px 10px;border-bottom:1px solid var(--rule);background:var(--sunk);white-space:nowrap;position:sticky;top:0}
+table.t td{padding:7px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td.n,table.t th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.t tr:last-child td{border-bottom:0}
+table.t tbody tr.click{cursor:pointer}
+table.t tbody tr.click:hover{background:var(--accent-soft)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:.75rem;font-weight:500;padding:1px 7px 1px 5px;border-radius:10px;border:1px solid var(--rule);white-space:nowrap;color:var(--ink)}
+.badge i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.scroll{max-height:32rem;overflow:auto}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.filters input[type=search],.filters select{font:inherit;font-size:.92rem;padding:6px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);color:var(--ink);min-width:0}
+.filters input[type=search]{flex:1 1 14rem}
+.pchip{font:inherit;font-size:.85rem;padding:5px 10px;border-radius:14px;border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.pchip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);font-weight:600}
+.pchip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.count{font-size:.85rem;color:var(--ink-3)}
+
+/* charts */
+.chart{position:relative;min-width:0}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .ax text{fill:var(--ink-3);font-family:var(--f-mono);font-size:10.5px}
+.chart .ax line{stroke:var(--rule)}
+.chart .grid line{stroke:var(--rule);stroke-opacity:.6}
+.chart .ttl{fill:var(--ink-2);font-size:11.5px;font-family:var(--f-body)}
+.chart .lbl{font-size:11.5px;font-family:var(--f-body);fill:var(--ink);font-weight:600}
+.chart .xh{stroke:var(--ink-3);stroke-dasharray:3 3}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:7px 9px;font-size:.8rem;box-shadow:0 4px 14px rgba(0,0,0,.15);white-space:nowrap;z-index:5}
+.tip b{font-family:var(--f-mono);font-weight:500}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.85rem;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:18px;height:0;border-top:2.5px solid}
+
+.act{counter-reset:a;display:grid;gap:12px}
+.act li{list-style:none;display:grid;grid-template-columns:2rem minmax(0,1fr);gap:10px;align-items:start}
+.act li::before{counter-increment:a;content:counter(a);font-family:var(--f-display);font-weight:800;font-size:1.1rem;width:2rem;height:2rem;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center}
+.act ul{padding:0;margin:0}
+footer{margin-top:48px;border-top:1px solid var(--rule);padding-block:20px 40px;color:var(--ink-3);font-size:.85rem}
+
+@media (max-width:860px){
+  .mapgrid{grid-template-columns:1fr}
+  .panel{border-left:0;border-top:1px solid var(--rule);max-height:none}
+  #map{height:62vh;min-height:380px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="eyebrow">Rapid desk assessment · Myanaung &amp; Ingapu townships, Ayeyarwady Region · 10 October 2026</div>
+    <h1>Ma Mya Dam break assessment</h1>
+    <p class="lede">The earthen embankment of Ma Mya Reservoir (<span class="mm">မမြရေလှောင်တမံ</span>) in Myin War Taung village tract has subsided. This page models what would happen downstream if it fails: where the water goes, how fast it arrives, and which villages need to move first.</p>
+    <div class="status" aria-label="Dam status timeline from local news">
+      <div><time>10 Oct · 07:30</time><b>Embankment subsidence filmed</b><span class="scen-note">Officials and residents report no breach.</span></div>
+      <div><time>10 Oct · 09:00</time><b>Spillway release started</b><span class="scen-note">Water is being let out to relieve the embankment.</span></div>
+      <div class="now"><time>Status at writing</time><b>No breach reported</b><span class="scen-note">Emergency inspections and repairs under way (SH News).</span></div>
+    </div>
+    <p class="caveat"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1 15 14H1Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 6v4M8 11.5v1" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span>Model output for preparedness planning, built from open data in a few hours. It is not an official warning and has not been checked in the field. Follow instructions from township authorities and the Irrigation and Water Utilization Management Department.</span></p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="kpis" id="kpis" aria-label="Key figures for the selected scenario">
+    <div class="kpi"><span class="eyebrow">Peak outflow at dam</span><span class="v num" id="k-q">11,100 <small>m³/s</small></span><span class="l" id="k-q-l">Median of four breach equations, full breach at full supply level</span></div>
+    <div class="kpi"><span class="eyebrow">First villages reached</span><span class="v num" id="k-t">&lt; 1 <small>hour</small></span><span class="l" id="k-t-l">Myin War Taung, 3 km below the dam. Htoogyi town edge ≈ 8 h; Ngawun River ≈ 25 h</span></div>
+    <div class="kpi"><span class="eyebrow">Villages in flood zone</span><span class="v num" id="k-v">177</span><span class="l" id="k-v-l">33 need to move as soon as a breach is suspected</span></div>
+    <div class="kpi"><span class="eyebrow">People in flood zone</span><span class="v num" id="k-p">31k–47k</span><span class="l">WorldPop 2020 inside the extent, and within 150 m of it</span></div>
+  </div>
+
+  <div class="mapgrid">
+    <div id="map" role="region" aria-label="Flood map"></div>
+    <aside class="panel" aria-label="Map controls">
+      <fieldset>
+        <legend class="eyebrow">Breach scenario</legend>
+        <div class="seg" id="seg-scen">
+          <button type="button" data-s="S1" aria-pressed="true"><span class="sw" style="background:var(--s1)"></span>S1</button>
+          <button type="button" data-s="S2" aria-pressed="false"><span class="sw" style="background:var(--s2)"></span>S2</button>
+          <button type="button" data-s="S3" aria-pressed="false"><span class="sw" style="background:var(--s3)"></span>S3</button>
+        </div>
+        <p class="scen-note" id="scen-note"></p>
+      </fieldset>
+      <fieldset>
+        <legend class="eyebrow">Show on flood</legend>
+        <div class="seg" id="seg-view">
+          <button type="button" data-v="depth" aria-pressed="true">Depth</button>
+          <button type="button" data-v="arrival" aria-pressed="false">Arrival time</button>
+        </div>
+        <div class="key" id="key-flood"></div>
+      </fieldset>
+      <fieldset>
+        <legend class="eyebrow">Villages (priority from S1)</legend>
+        <div class="key">
+          <div class="row"><span class="dot" style="background:var(--p1)"></span>P1 · move on first sign of breach (wave &lt; 3 h)</div>
+          <div class="row"><span class="dot" style="background:var(--p2)"></span>P2 · evacuate, wave in 3–12 h</div>
+          <div class="row"><span class="dot" style="background:var(--p3)"></span>P3 · prepare, wave &gt; 12 h or worst case only</div>
+          <div class="row"><span class="dot" style="background:var(--p4)"></span>Alert · within 1 km of worst-case extent</div>
+        </div>
+        <label class="chk"><input type="checkbox" id="c-vall"> Show all other villages</label>
+      </fieldset>
+      <fieldset>
+        <legend class="eyebrow">Layers</legend>
+        <label class="chk"><input type="checkbox" id="c-flood" checked> Modelled flood</label>
+        <label class="chk"><input type="checkbox" id="c-paths" checked> <span class="ln" style="display:inline-block;width:18px;border-top:2.5px solid var(--path)"></span> Revised paths (A solid, B dashed)</label>
+        <label class="chk"><input type="checkbox" id="c-user" checked> <span style="display:inline-block;width:18px;border-top:4px solid var(--user)"></span> Original projected path</label>
+        <label class="chk"><input type="checkbox" id="c-sta"> Arrival time every 5 km</label>
+        <label class="chk"><input type="checkbox" id="c-fac"> Schools, health post, bridges</label>
+        <label class="chk"><input type="checkbox" id="c-cat"> Dam catchment (154 km²)</label>
+      </fieldset>
+      <p class="mapnote">Relief: Copernicus GLO-30. Boundaries, villages, schools: MIMU. Waterways: OSM. Tap a village for depth and arrival time.</p>
+    </aside>
+  </div>
+
+  <section class="sec" id="path">
+    <header><span class="eyebrow">1 · Where the water goes</span><h2>The original path stops about 50 km short</h2></header>
+    <div class="two">
+      <div class="prose">
+        <p>The projected path in <span class="mm">ယူဆ ရေလမ်းကြောင်း.kml</span> is a 16.6 km line from the dam to the point where the Ma Mya valley opens onto the plain (95.21° E, 18.03° N). Tracing water over the Copernicus 30 m terrain model confirms its alignment: the traced flow line stays within 0.3 km of it on average, and never more than 0.7 km.</p>
+        <p>The water does not stop where the valley ends. Beyond that point the ground keeps falling south-east towards the Ngawun (Pathein) River, which the flood reaches near Ingapu after another 55 to 70 km. The plain splits the flow two ways, and both are mapped:</p>
+        <ul class="clean">
+          <li><b>Branch A, overland (solid line).</b> The steepest route over the terrain. It leaves the creek near Htoogyi and runs south through the low paddy basin west of the creek, passing Htoogyi and the eastern edge of Ingapu town.</li>
+          <li><b>Branch B, Ma Mya Chaung channel (dashed line).</b> Follows the creek as mapped in OpenStreetMap: east past In Pin, then south to the Ngawun.</li>
+        </ul>
+        <p>Each branch is modelled as if it carried the whole flood. That is deliberately cautious: in reality the flow will divide, and the split depends on embankments, roads and canals that a 30 m terrain model cannot see.</p>
+      </div>
+      <div class="tbl"><table class="t" id="t-path"><thead><tr><th>Path</th><th class="n">Length km</th><th class="n">Mean off. km</th><th class="n">Max off. km</th><th class="n">Original covers</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="sec" id="breach">
+    <header><span class="eyebrow">2 · How big the flood is</span><h2>Breach outflow and scenarios</h2></header>
+    <div class="two">
+      <div class="prose">
+        <p>The Open Development Mekong dam inventory (from Department of Irrigation data) lists Ma Mya at <b>86.38 million m³</b> storage at full supply level, 5.38 km² of water surface and a 3.6 km crest, completed in 2007. In the terrain model the reservoir surface sits at about 86 m and the creek bed at the dam toe at 55 m. Because the spillway is spilling, the pool is close to full; taking full supply level as 88 m gives <b>33 m of water above the breach floor</b>.</p>
+        <p>Four widely used empirical equations turn volume and head into a peak outflow. Their spread is large, which is normal for dam-break estimates. The <b>best estimate (S1)</b> uses their median. <b>S2</b> is a partial breach that erodes only to mid-height, which is plausible for a slump that is caught early. <b>S3</b> takes the highest equation as an upper envelope. Froehlich (2008) puts the breach at roughly 110 m wide, forming over about 1.5 hours.</p>
+        <div class="chart" id="ch-hydro"></div>
+        <div class="legend" id="lg-hydro"></div>
+      </div>
+      <div class="tbl"><table class="t" id="t-breach"><thead><tr><th>Peak outflow, m³/s</th><th class="n">S1</th><th class="n">S2</th><th class="n">S3</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="sec" id="profile">
+    <header><span class="eyebrow">3 · How fast it arrives</span><h2>Travel time and attenuation along the paths</h2>
+      <p class="scen-note">Hours count from the moment the breach starts to open. A warning given when cracking or seepage is first seen buys extra time on top of this.</p></header>
+    <div class="two">
+      <div class="card"><h3>Wave arrival (water up 0.3 m)</h3><div class="chart" id="ch-arr"></div></div>
+      <div class="card"><h3>Peak discharge</h3><div class="chart" id="ch-q"></div></div>
+    </div>
+    <div class="legend"><span><i style="border-color:var(--path)"></i>Branch A, overland</span><span><i style="border-color:var(--path);border-top-style:dashed"></i>Branch B, Ma Mya Chaung channel</span><span class="scen-note" id="prof-scen"></span></div>
+    <p class="prose">The valley section is fast and dangerous. In the first 10 km water rises 3 to 7 m at more than 2 m/s, and the villages of Myin War Taung, Nga Bat Kya, Let Pan Kwin and Ma Yway Kone tracts have less than 3 hours. Once the flood spreads onto the plain it slows to about 0.5–1 m/s and its peak falls to about a fifth of the dam outflow. Water there still rises 2–5 m above normal, but the lower reaches have most of a day to move people.</p>
+  </section>
+
+  <section class="sec" id="villages">
+    <header><span class="eyebrow">4 · Who is exposed</span><h2>Villages by evacuation priority</h2>
+      <p>Priority is set from scenario S1: P1 if the wave arrives within 3 hours (or within 6 hours with more than 1.5 m depth), P2 if it arrives within 3–12 hours, P3 if later or only in the worst case. Depth is the deepest water within 150 m of the village point, because the terrain model sees treetops and roofs, not the ground inside the village. Population is a WorldPop 2020 estimate assigned to the nearest village point.</p></header>
+    <div class="card">
+      <h3>Village tracts in order of first arrival</h3>
+      <div class="tbl scroll" style="max-height:22rem"><table class="t" id="t-vt"><thead><tr><th>Village tract</th><th>Township</th><th class="n">First arrival h</th><th class="n">P1</th><th class="n">P2</th><th class="n">P3</th><th class="n">Alert</th><th class="n">Max depth m</th><th class="n">Est. people</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="card">
+      <h3>Every village at risk</h3>
+      <div class="filters">
+        <input type="search" id="q" placeholder="Search village or tract, English or Myanmar" aria-label="Search villages">
+        <select id="f-ts" aria-label="Township"><option value="">All townships</option></select>
+        <span id="pchips"></span>
+      </div>
+      <div class="count" id="v-count"></div>
+      <div class="tbl scroll"><table class="t" id="t-v"><thead><tr><th>Priority</th><th>Village</th><th>Village tract</th><th>Township</th><th class="n">Depth S1 m</th><th class="n">Arrival S1 h</th><th class="n">Depth S3 m</th><th class="n">Est. people</th><th class="n">Km from dam</th></tr></thead><tbody></tbody></table></div>
+      <p class="mapnote">Tap a row to show the village on the map. The full table with Pcodes is in villages_at_risk.csv.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="infra">
+    <header><span class="eyebrow">5 · What else is in the way</span><h2>Schools, roads and bridges</h2></header>
+    <div class="two">
+      <div class="prose">
+        <p id="infra-text"></p>
+        <div class="tbl"><table class="t" id="t-roads"><thead><tr><th>Road class (OSM)</th><th class="n">S1 km</th><th class="n">S2 km</th><th class="n">S3 km</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="tbl scroll" style="max-height:26rem"><table class="t" id="t-fac"><thead><tr><th>Facility</th><th>Name</th><th class="n">Depth S1 m</th><th class="n">Arrival h</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="sec" id="actions">
+    <header><span class="eyebrow">6 · What to do now</span><h2>Recommended actions</h2></header>
+    <ol class="act" style="padding:0;margin:0">
+      <li><div><b>Move P1 villages before a breach, not after.</b> With water arriving within 1–3 hours and no siren network, the 33 P1 villages in Myin War Taung, Nga Bat Kya, Let Pan Kwin, Ma Yway Kone, Htein Thay Gyi and Nyaung Chin tracts (≈ 5,700 people) should be moved to higher ground now. Elderly people, children and livestock should move first while the dam is under repair. Send people to the higher ground north and south of the valley, never across or along the creek.</div></li>
+      <li><div><b>Put a watch on the embankment around the clock, with a direct alert chain.</b> Name observers at the dam. Agree a trigger (new cracks, muddy seepage, the slump widening, water within 1 m of the crest), one phone tree, and loudspeakers or monastery bells for every P1 and P2 village.</div></li>
+      <li><div><b>Warn Ingapu Township.</b> The village file covered only Myanaung, but 106 of the villages at risk are in Ingapu, including Htoogyi, where the overland branch passes within 0.3 km of town at about 8 hours, and the eastern edge of Ingapu town at about 23 hours.</div></li>
+      <li><div><b>Keep drawing the reservoir down.</b> Every metre of drawdown reduces both the head and the volume. On the same equations, a pool 3 m lower cuts the best-estimate peak by about 16%, and 5 m lower by about 26%.</div></li>
+      <li><div><b>Plan routes around the 4 bridges and ≈ 300 km of road inside the flood extent.</b> Pre-position boats, food and medicine on the high-ground side. Treat the 96 schools inside the extent as unsafe shelters, and choose shelters outside the mapped area.</div></li>
+      <li><div><b>Replace the assumptions with real data.</b> Ask IWUMD for the crest level, full supply level, spillway capacity and current pool level, then rerun the model. If a breach happens, use Sentinel-1 radar images to map the actual flood within a day.</div></li>
+    </ol>
+  </section>
+
+  <section class="sec" id="method">
+    <header><span class="eyebrow">7 · How this was made</span><h2>Method, data and limits</h2></header>
+    <div class="two">
+      <div class="prose">
+        <h3>Steps</h3>
+        <ul class="clean">
+          <li><b>Terrain and drainage.</b> Copernicus GLO-30 DEM (4 tiles) reprojected to UTM 46N at 30 m. Depressions filled with priority-flood plus epsilon, then D8 flow directions. Dam catchment 153.6 km².</li>
+          <li><b>Flow paths.</b> Traced downstream from the dam toe until the Ayeyarwady or Ngawun River (MIMU 250k). Branch B burns the OSM Ma Mya Chaung line 20 m into the DEM.</li>
+          <li><b>Breach.</b> Froehlich (1995), MacDonald &amp; Langridge-Monopolis (1984), USBR (1982) and Webby (1996) peak equations. Breach width and formation time from Froehlich (2008). Hydrograph: linear rise, then exponential recession that conserves the stored volume.</li>
+          <li><b>Routing.</b> Cross-sections every 500 m, 12 km wide, cut from the DEM. Strip-conveyance Manning rating with n = 0.06. Cascade of non-linear storage reaches at a 5 s time step over 48 h. Mass balance closes to within 1%.</li>
+          <li><b>Mapping.</b> Peak water levels interpolated between sections, limited to each section's wetted width and kept only where connected to the path. Depth is measured above the pre-flood water level.</li>
+          <li><b>Exposure.</b> 1,224 MIMU village points (your Myanaung file plus Ingapu, Kyangin and Hinthada from the MIMU server), MIMU schools, health facilities and bridges, OSM roads, WorldPop 2020 constrained population.</li>
+        </ul>
+      </div>
+      <div class="prose">
+        <h3>Limits to keep in mind</h3>
+        <ul class="clean">
+          <li>The DEM is a surface model: trees, houses and embankments raise it. Small levees, road embankments and canals that steer water on the plain are missed.</li>
+          <li>Full supply level, crest level and reservoir shape are not published. Head is inferred from the DEM, and peak-flow equations are typically uncertain by ±50%.</li>
+          <li>Each branch carries the whole flood, and the map shows the deepest water each place sees during the event. The flooded area is not all under water at the same moment.</li>
+          <li>On the flat lower plain, flooding fills the full 6 km half-width of the sections. The rounded edges there show where the model hits that limit and are not a true flood boundary.</li>
+          <li>Backwater from a high Ngawun or Ayeyarwady in October is not modelled. It would raise levels in the last 10–15 km.</li>
+          <li>Arrival times are counted from breach start. Population is a 2020 estimate.</li>
+        </ul>
+        <h3>Sources</h3>
+        <ul class="clean" style="font-size:.9rem">
+          <li>Village points: MIMU Pcode 9.5 via your KML and the <a href="https://geonode.themimu.info" target="_blank" rel="noopener">MIMU GeoNode</a> (boundaries, schools, health facilities, bridges, reservoirs, rivers).</li>
+          <li>Dam data: <a href="https://data.opendevelopmentmekong.net/dataset/myanmar-dams" target="_blank" rel="noopener">Open Development Mekong, Myanmar dams</a>. Irrigation figures: <a href="https://data.unhcr.org/ar/news/20748" target="_blank" rel="noopener">GNLM, "Ma Mya Dam benefiting public"</a>.</li>
+          <li>Terrain: Copernicus DEM GLO-30 (ESA, AWS open data). Population: WorldPop 2020 constrained. Waterways and roads: © OpenStreetMap contributors.</li>
+          <li>Situation: SH News Facebook posts, 10 October 2026 (MaMyaDam_news.docx).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+<!--DOWNLOADS-->
+<footer><div class="wrap">Prepared 10 October 2026 from open data. Files: analysis/outputs (KML/KMZ for Google Earth, CSV tables, PNG maps) and analysis/scripts (reproducible Python pipeline).</div></footer>
+
+<script type="application/json" id="bundle">__BUNDLE__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+(function(){
+const B = JSON.parse(document.getElementById('bundle').textContent);
+const $ = s => document.querySelector(s);
+const fmt = (v, d=0) => (v===null||v===undefined||Number.isNaN(v)) ? '–' : Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const PR = {1:'P1',2:'P2',3:'P3',4:'Alert',0:'Outside'};
+const SCEN = {
+  S1:{name:'Full breach, best estimate', note:'Full breach with the pool at full supply level. Peak outflow is the median of four equations.'},
+  S2:{name:'Partial breach', note:'The breach erodes only to mid-height, which is plausible if the slump is caught early. Lower peak, slower wave.'},
+  S3:{name:'Upper envelope', note:'Full breach with the highest of the four equations (Webby 1996). Use it for worst-case planning.'}
+};
+let scen='S1', view='depth';
+const state = {pr:new Set([1,2,3,4]), q:'', ts:''};
+
+/* ---------------- map ---------------- */
+const map = L.map('map',{zoomControl:true, attributionControl:true, preferCanvas:false, zoomSnap:.25}).setView([18.0,95.18],10.5);
+map.attributionControl.setPrefix(false).addAttribution('Copernicus DEM · MIMU · OSM · WorldPop');
+L.control.scale({imperial:false}).addTo(map);
+const H = B.layers.hillshade;
+L.imageOverlay(H.img, H.bounds, {className:'hs-img', opacity:.9, interactive:false}).addTo(map);
+const gj = (data, cls, extra={}) => L.geoJSON(data, Object.assign({style:()=>({className:cls, weight:extra.w||1.5})}, extra));
+gj(B.townships,'tsb',{w:1, interactive:false}).addTo(map);
+gj(B.rivers,'riv',{w:3, interactive:false}).addTo(map);
+const catch_ = gj(B.catchment,'cat',{w:1.5, interactive:false});
+gj(B.reservoir,'res',{w:1, interactive:false}).addTo(map);
+const flood = {};
+for (const s of ['S1','S2','S3']) for (const v of ['depth','arrival']) {
+  const L_ = B.layers[`${v}_${s}`];
+  flood[`${v}_${s}`] = L.imageOverlay(L_.img, L_.bounds, {opacity:.82, interactive:false});
+}
+const userPath = gj(B.user_path,'pu',{w:6, interactive:false}).addTo(map);
+const paths = L.geoJSON(B.paths,{style:f=>({className: f.properties.branch==='A'?'pa':'pb', weight: f.properties.branch==='A'?2.4:2.2})})
+  .bindTooltip(l=>l.feature.properties.name, {sticky:true}).addTo(map);
+const damIcon = L.divIcon({className:'', html:'<div class="dam-ic" role="img" aria-label="Ma Mya Dam"></div>', iconSize:[22,19], iconAnchor:[11,15]});
+L.marker(B.dam,{icon:damIcon, keyboard:false}).bindPopup('<div class="pop"><h4>Ma Mya Dam · မမြဆည်</h4><div class="en">Myin War Taung village tract, Myanaung</div>Storage at full supply level 86.38 million m³ · water surface 5.38 km² · crest 3.6 km · completed 2007. Embankment subsidence reported 10 Oct 2026, spillway releasing from 09:00.</div>').addTo(map);
+
+// stations every 5 km
+const sta = L.layerGroup();
+function drawStations(){
+  sta.clearLayers();
+  B.stations.features.filter(f=>f.properties.chain_m%5000===0 && f.properties.chain_m>0).forEach(f=>{
+    const p=f.properties, c=f.geometry.coordinates;
+    const a = p[`${scen}_arrival_h`];
+    L.circleMarker([c[1],c[0]],{radius:3.5, className:'sta', fillOpacity:1}).bindTooltip(`${p.branch} ${p.chain_m/1000} km · ${fmt(a,1)} h`,{permanent:true, direction:'right', className:'st-lbl', offset:[5,0]}).addTo(sta);
+  });
+}
+// facilities
+const fac = L.layerGroup();
+B.facilities.features.forEach(f=>{
+  const p=f.properties,c=f.geometry.coordinates;
+  L.circleMarker([c[1],c[0]],{radius:4, className:'fac', fillOpacity:1}).bindTooltip(`${p.facility_type}: ${p.name} · S1 ${fmt(p.S1_depth_m,1)} m`).addTo(fac);
+});
+// villages
+const vAll = L.layerGroup(), vRisk = L.layerGroup().addTo(map);
+const markerBy = {};
+function popHtml(p){
+  const row=(s)=>`<tr><td>${s}</td><td>${fmt(p[s+'_depth_m'],1)} m</td><td>${p[s+'_arrival_h']==null?'–':fmt(p[s+'_arrival_h'],1)+' h'}</td></tr>`;
+  return `<div class="pop"><h4>${p.village_mm||p.village}</h4><div class="en">${p.village} · ${p.vt} tract · ${p.ts}</div>
+  <div style="margin-bottom:6px"><span class="badge"><i style="background:var(--p${p.priority})"></i>${PR[p.priority]}</span> <span class="num" style="font-size:.8rem;color:var(--ink-2)">${fmt(p.dist_from_dam_km,1)} km from dam · ≈${fmt(p.pop_est_worldpop)} people</span></div>
+  <table><tr><td></td><td>depth</td><td>arrival</td></tr>${row('S1')}${row('S2')}${row('S3')}</table></div>`;
+}
+B.villages.features.forEach(f=>{
+  const p=f.properties,c=f.geometry.coordinates;
+  const pr=p.priority||0;
+  const m=L.circleMarker([c[1],c[0]],{radius: pr===0?2.5: pr===1?6.5: pr===2?5.5:4.5, className:`vil p${pr}`, fillOpacity:pr===0?.8:1, opacity:1}).bindPopup(popHtml(p));
+  markerBy[p.vlg_pcode]=m;
+  (pr>0?vRisk:vAll).addLayer(m);
+});
+function setFlood(){
+  for (const k in flood) map.removeLayer(flood[k]);
+  if ($('#c-flood').checked) flood[`${view}_${scen}`].addTo(map).bringToBack();
+  // keep hillshade underneath
+  map.eachLayer(l=>{ if(l.options && l.options.className==='hs-img') l.bringToBack(); });
+  drawKey(); drawStations();
+}
+function drawKey(){
+  const el=$('#key-flood');
+  if(view==='depth'){
+    el.innerHTML=['< 0.5 m','0.5–1.5 m','1.5–3 m','> 3 m'].map((t,i)=>`<div class="row"><span class="chip" style="background:var(--d${i+1})"></span>${t} above normal water level</div>`).join('');
+  } else {
+    el.innerHTML=['< 1 h','1–3 h','3–6 h','6–12 h','12–24 h','> 24 h'].map((t,i)=>`<div class="row"><span class="chip" style="background:var(--a${i+1})"></span>${t} after breach starts</div>`).join('');
+  }
+}
+const tog=(id,layer)=>$(id).addEventListener('change',e=>e.target.checked?layer.addTo(map):map.removeLayer(layer));
+tog('#c-paths',paths); tog('#c-user',userPath); tog('#c-sta',sta); tog('#c-fac',fac); tog('#c-cat',catch_); tog('#c-vall',vAll);
+$('#c-flood').addEventListener('change',setFlood);
+function segInit(id,attr,cb){
+  document.querySelectorAll(`${id} button`).forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll(`${id} button`).forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
+    cb(b.dataset[attr]);
+  }));
+}
+segInit('#seg-scen','s',s=>{scen=s; refreshScenario();});
+segInit('#seg-view','v',v=>{view=v; setFlood();});
+map.fitBounds([[17.76,95.04],[18.13,95.37]]);
+
+/* ---------------- KPIs ---------------- */
+const vil = B.villages.features.map(f=>f.properties);
+const bs = Object.fromEntries(B.breach_scenarios.map(r=>[r.scenario,r]));
+const ex = Object.fromEntries(B.exposure_summary.map(r=>[r.scenario,r]));
+function refreshScenario(){
+  const r=bs[scen], e=ex[scen];
+  $('#scen-note').textContent=SCEN[scen].note;
+  $('#k-q').innerHTML=`${fmt(Math.round(r.Qp_used_m3s/100)*100)} <small>m³/s</small>`;
+  $('#k-q-l').textContent=`${SCEN[scen].name}: ${fmt(r.Vw_Mm3,1)} million m³ released with ${fmt(r.hw_m,1)} m of head`;
+  const flooded=vil.filter(p=>p[scen+'_depth_m']>0.05);
+  const fast=flooded.filter(p=>p[scen+'_arrival_h']!=null && p[scen+'_arrival_h']<=3).length;
+  const first=Math.min(...flooded.map(p=>p[scen+'_arrival_h']).filter(x=>x!=null));
+  $('#k-t').innerHTML = first<1 ? '&lt; 1 <small>hour</small>' : `${fmt(first,1)} <small>hours</small>`;
+  const st=B.stations.features.map(f=>f.properties);
+  const endA=Math.max(...st.filter(p=>p.branch==='A').map(p=>p[scen+'_arrival_h']));
+  $('#k-t-l').textContent=`Myin War Taung, 3 km below the dam. Ngawun River reached after ≈ ${fmt(endA,0)} h`;
+  $('#k-v').textContent=fmt(e.villages_flooded);
+  $('#k-v-l').textContent=`${fast} of them reached within 3 hours. ${fmt(e.flooded_km2)} km² flooded at some point`;
+  $('#k-p').textContent=`${fmt(e.pop_in_extent/1000,0)}k–${fmt(e.pop_in_extent_plus150m/1000,0)}k`;
+  setFlood(); drawProfiles();
+}
+
+/* ---------------- tables ---------------- */
+const tb = (sel, rows) => { $(sel+' tbody').innerHTML = rows.join(''); };
+tb('#t-path', B.path_comparison.map(r=>`<tr><td>${r.path}</td><td class="n">${fmt(r.length_km,1)}</td><td class="n">${r.mean_offset_km==null?'–':fmt(r.mean_offset_km,2)}</td><td class="n">${r.max_offset_km==null?'–':fmt(r.max_offset_km,2)}</td><td class="n">${r.user_line_reaches_km==null?'–':fmt(r.user_line_reaches_km,1)+' km ('+fmt(r.share_covered_pct,0)+'%)'}</td></tr>`));
+const eqs=['Qp Froehlich (1995)','Qp MacDonald & Langridge-Monopolis (1984)','Qp USBR (1982)','Qp Webby (1996)'];
+const S=['S1','S2','S3'];
+tb('#t-breach', [
+  ...eqs.map(k=>`<tr><td>${k.replace('Qp ','')}</td>${S.map(s=>`<td class="n">${fmt(bs[s][k])}</td>`).join('')}</tr>`),
+  `<tr><td><b>Used in model</b></td>${S.map(s=>`<td class="n"><b>${fmt(bs[s].Qp_used_m3s)}</b></td>`).join('')}</tr>`,
+  `<tr><td>Volume released, million m³</td>${S.map(s=>`<td class="n">${fmt(bs[s].Vw_Mm3,1)}</td>`).join('')}</tr>`,
+  `<tr><td>Head on breach, m</td>${S.map(s=>`<td class="n">${fmt(bs[s].hw_m,1)}</td>`).join('')}</tr>`,
+  `<tr><td>Breach width, m</td>${S.map(s=>`<td class="n">${fmt(bs[s]['breach_width_m (Froehlich 2008)'])}</td>`).join('')}</tr>`,
+  `<tr><td>Formation time, h</td>${S.map(s=>`<td class="n">${fmt(bs[s]['failure_time_h (Froehlich 2008)'],1)}</td>`).join('')}</tr>`,
+  `<tr><td>Flooded area, km²</td>${S.map(s=>`<td class="n">${fmt(ex[s].flooded_km2)}</td>`).join('')}</tr>`,
+  `<tr><td>Villages flooded</td>${S.map(s=>`<td class="n">${fmt(ex[s].villages_flooded)}</td>`).join('')}</tr>`,
+]);
+tb('#t-vt', B.vt_summary.filter(r=>r.p1+r.p2+r.p3>0).map(r=>`<tr><td>${r.vt}</td><td>${r.ts}</td><td class="n">${fmt(r.earliest_arrival_h,1)}</td><td class="n">${r.p1||''}</td><td class="n">${r.p2||''}</td><td class="n">${r.p3||''}</td><td class="n">${r.alert||''}</td><td class="n">${fmt(r.max_depth_S1,1)}</td><td class="n">${fmt(r.pop_est)}</td></tr>`));
+const roads=B.roads_flooded_km;
+tb('#t-roads', roads.map(r=>`<tr><td>${r.highway==='total'?'<b>Total</b>':r.highway}</td>${S.map(s=>`<td class="n">${fmt(r[s],1)}</td>`).join('')}</tr>`));
+const ft=B.facilities_table.filter(r=>r.S1_depth_m>0.05);
+const fc={school:0,'health facility':0,bridge:0}; ft.forEach(r=>fc[r.facility_type]++);
+$('#infra-text').textContent=`In scenario S1 the flood reaches ${fc.school} schools (MIMU 2019 school list), ${fc['health facility']} health facility and ${fc.bridge} major bridges, and covers about ${fmt(roads.find(r=>r.highway==='total').S1)} km of mapped road. Most of that is village roads, which are also the evacuation routes. Schools inside the extent should not be used as flood shelters.`;
+tb('#t-fac', ft.sort((a,b)=>(a.S1_arrival_h??99)-(b.S1_arrival_h??99)).map(r=>`<tr><td>${r.facility_type}</td><td class="mm">${r.name}</td><td class="n">${fmt(r.S1_depth_m,1)}</td><td class="n">${fmt(r.S1_arrival_h,1)}</td></tr>`));
+
+// village list
+const risk = vil.filter(p=>p.priority>0);
+const tss=[...new Set(risk.map(p=>p.ts))].sort();
+$('#f-ts').innerHTML+=tss.map(t=>`<option>${t}</option>`).join('');
+$('#pchips').innerHTML=[1,2,3,4].map(p=>`<button type="button" class="pchip" data-p="${p}" aria-pressed="true"><i style="background:var(--p${p})"></i>${PR[p]} <span class="num">${risk.filter(v=>v.priority===p).length}</span></button>`).join(' ');
+document.querySelectorAll('.pchip').forEach(b=>b.addEventListener('click',()=>{
+  const p=+b.dataset.p; state.pr.has(p)?state.pr.delete(p):state.pr.add(p);
+  b.setAttribute('aria-pressed',state.pr.has(p)); renderV();
+}));
+$('#q').addEventListener('input',e=>{state.q=e.target.value.trim().toLowerCase(); renderV();});
+$('#f-ts').addEventListener('change',e=>{state.ts=e.target.value; renderV();});
+function renderV(){
+  const rows=risk.filter(p=>state.pr.has(p.priority) && (!state.ts||p.ts===state.ts) &&
+    (!state.q || [p.village,p.village_mm,p.vt].join(' ').toLowerCase().includes(state.q)))
+    .sort((a,b)=>a.priority-b.priority || (a.S1_arrival_h??99)-(b.S1_arrival_h??99) || a.dist_from_dam_km-b.dist_from_dam_km);
+  $('#v-count').textContent=`${rows.length} villages · ≈ ${fmt(rows.reduce((s,p)=>s+(p.pop_est_worldpop||0),0))} people`;
+  tb('#t-v', rows.map(p=>`<tr class="click" data-pc="${p.vlg_pcode}" tabindex="0"><td><span class="badge"><i style="background:var(--p${p.priority})"></i>${PR[p.priority]}</span></td><td><span class="mm">${p.village_mm||''}</span><br><span style="color:var(--ink-2);font-size:.85rem">${p.village}</span></td><td>${p.vt}</td><td>${p.ts}</td><td class="n">${fmt(p.S1_depth_m,1)}</td><td class="n">${fmt(p.S1_arrival_h,1)}</td><td class="n">${fmt(p.S3_depth_m,1)}</td><td class="n">${fmt(p.pop_est_worldpop)}</td><td class="n">${fmt(p.dist_from_dam_km,1)}</td></tr>`));
+}
+function goVillage(pc){
+  const m=markerBy[pc]; if(!m) return;
+  document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'});
+  map.flyTo(m.getLatLng(),13,{duration:.8}); setTimeout(()=>m.openPopup(),850);
+}
+$('#t-v').addEventListener('click',e=>{const tr=e.target.closest('tr[data-pc]'); if(tr) goVillage(tr.dataset.pc);});
+$('#t-v').addEventListener('keydown',e=>{if(e.key==='Enter'){const tr=e.target.closest('tr[data-pc]'); if(tr) goVillage(tr.dataset.pc);}});
+renderV();
+
+/* ---------------- charts ---------------- */
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e;}
+function nice(max){const p=Math.pow(10,Math.floor(Math.log10(max))); const m=max/p; const s=m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10; return s*p;}
+function lineChart(host,{series,xMax,yLabel,xLabel,fmtY,fmtX,labels=true}){
+  host.innerHTML='';
+  const W=560,Hh=270,m={l:56,r:labels?92:16,t:14,b:40};
+  const yMax=nice(Math.max(...series.flatMap(s=>s.y.filter(v=>v!=null)))*1.05);
+  const xM=xMax||Math.max(...series.flatMap(s=>s.x));
+  const sx=x=>m.l+(x/xM)*(W-m.l-m.r), sy=y=>Hh-m.b-(y/yMax)*(Hh-m.t-m.b);
+  const svg=el('svg',{viewBox:`0 0 ${W} ${Hh}`,role:'img','aria-label':yLabel},host);
+  const g=el('g',{class:'grid'},svg), ax=el('g',{class:'ax'},svg);
+  const yt=5; for(let i=0;i<=yt;i++){const v=yMax*i/yt; el('line',{x1:m.l,x2:W-m.r,y1:sy(v),y2:sy(v)},g); const t=el('text',{x:m.l-8,y:sy(v)+3.5,'text-anchor':'end'},ax); t.textContent=fmtY(v);}
+  const xs=nice(xM/6); for(let v=0;v<=xM+1e-9;v+=xs){const t=el('text',{x:sx(v),y:Hh-m.b+16,'text-anchor':'middle'},ax); t.textContent=fmtX(v);}
+  el('line',{x1:m.l,x2:W-m.r,y1:sy(0),y2:sy(0)},ax);
+  const tx=el('text',{x:(m.l+W-m.r)/2,y:Hh-4,'text-anchor':'middle',class:'ttl'},svg); tx.textContent=xLabel;
+  const ty=el('text',{x:12,y:(m.t+Hh-m.b)/2,'text-anchor':'middle',class:'ttl',transform:`rotate(-90 12 ${(m.t+Hh-m.b)/2})`},svg); ty.textContent=yLabel;
+  series.forEach(s=>{
+    const d=s.x.map((x,i)=>s.y[i]==null||x>xM?null:`${sx(x).toFixed(1)},${sy(s.y[i]).toFixed(1)}`).filter(Boolean);
+    el('path',{d:'M'+d.join('L'),fill:'none',stroke:s.color,'stroke-width':2,'stroke-dasharray':s.dash||'none','stroke-linejoin':'round','stroke-linecap':'round'},svg);
+  });
+  if(labels){ // direct labels at line ends, nudged apart
+    const ends=series.map(s=>{let i=s.x.length-1; while(i>0&&(s.y[i]==null||s.x[i]>xM)) i--; return {s,y:sy(s.y[i])};}).sort((a,b)=>a.y-b.y);
+    for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<14) ends[i].y=ends[i-1].y+14;
+    ends.forEach(e=>{const t=el('text',{x:W-m.r+8,y:e.y+4,class:'lbl'},svg); t.textContent=e.s.name;});
+  }
+  // hover
+  const xh=el('line',{class:'xh',y1:m.t,y2:Hh-m.b,visibility:'hidden'},svg);
+  const dots=series.map(s=>el('circle',{r:4,fill:s.color,stroke:'var(--surface)','stroke-width':2,visibility:'hidden'},svg));
+  const tip=document.createElement('div'); tip.className='tip'; tip.hidden=true; host.appendChild(tip);
+  const hit=el('rect',{x:m.l,y:m.t,width:W-m.l-m.r,height:Hh-m.t-m.b,fill:'transparent'},svg);
+  const move=ev=>{
+    const r=svg.getBoundingClientRect(); const px=(ev.clientX-r.left)*W/r.width; const xv=Math.max(0,Math.min(xM,(px-m.l)/(W-m.l-m.r)*xM));
+    xh.setAttribute('x1',sx(xv)); xh.setAttribute('x2',sx(xv)); xh.setAttribute('visibility','visible');
+    let html=`<div style="color:var(--ink-3);margin-bottom:3px">${fmtX(xv,true)}</div>`;
+    series.forEach((s,i)=>{let j=0,best=1e9; s.x.forEach((x,k)=>{const dd=Math.abs(x-xv); if(dd<best&&s.y[k]!=null){best=dd;j=k;}});
+      dots[i].setAttribute('cx',sx(s.x[j])); dots[i].setAttribute('cy',sy(s.y[j])); dots[i].setAttribute('visibility','visible');
+      html+=`<div><span style="display:inline-block;width:12px;border-top:2.5px ${s.dash?'dashed':'solid'} ${s.color};margin-right:6px;vertical-align:3px"></span>${s.name} <b>${fmtY(s.y[j],true)}</b></div>`;});
+    tip.innerHTML=html; tip.hidden=false;
+    const left=(sx(xv)/W)*r.width; tip.style.left=Math.min(left+12, r.width-tip.offsetWidth-4)+'px'; tip.style.top='8px';
+  };
+  hit.addEventListener('pointermove',move); hit.addEventListener('pointerdown',move);
+  hit.addEventListener('pointerleave',()=>{tip.hidden=true; xh.setAttribute('visibility','hidden'); dots.forEach(d=>d.setAttribute('visibility','hidden'));});
+}
+function drawHydro(){
+  const h=B.hydro;
+  lineChart($('#ch-hydro'),{series:[
+      {name:'S3 upper',x:h.t,y:h.S3,color:'var(--s3)'},{name:'S1 best',x:h.t,y:h.S1,color:'var(--s1)'},{name:'S2 partial',x:h.t,y:h.S2,color:'var(--s2)'}],
+    xMax:10, yLabel:'Outflow at dam, m³/s', xLabel:'Hours after breach starts',
+    fmtY:(v,tip)=>tip?fmt(v)+' m³/s':fmt(v), fmtX:(v,tip)=>tip?fmt(v,1)+' h':fmt(v)});
+  $('#lg-hydro').innerHTML='<span><i style="border-color:var(--s1)"></i>S1 full breach, best estimate</span><span><i style="border-color:var(--s2)"></i>S2 partial breach</span><span><i style="border-color:var(--s3)"></i>S3 upper envelope</span>';
+}
+function drawProfiles(){
+  const P=B.profile;
+  const ser=v=>[{name:'Branch A',x:P.A.km,y:P.A[`${scen}_${v}`],color:'var(--path)'},{name:'Branch B',x:P.B.km,y:P.B[`${scen}_${v}`],color:'var(--path)',dash:'6 4'}];
+  lineChart($('#ch-arr'),{series:ser('arrival_h'),yLabel:'Hours after breach starts',xLabel:'Distance below dam along path, km',
+    fmtY:(v,t)=>t?fmt(v,1)+' h':fmt(v),fmtX:(v,t)=>t?fmt(v,1)+' km':fmt(v)});
+  lineChart($('#ch-q'),{series:ser('Qpeak'),yLabel:'Peak discharge, m³/s',xLabel:'Distance below dam along path, km',
+    fmtY:(v,t)=>t?fmt(v)+' m³/s':fmt(v),fmtX:(v,t)=>t?fmt(v,1)+' km':fmt(v)});
+  $('#prof-scen').textContent=`Showing scenario ${scen}: ${SCEN[scen].name.toLowerCase()}. Switch scenarios above the map.`;
+}
+drawHydro();
+refreshScenario();
+})();
+</script>

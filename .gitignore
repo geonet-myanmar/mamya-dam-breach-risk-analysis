@@ -1,0 +1,13 @@
+# Large downloaded / intermediate data (re-created by analysis/scripts/01-04)
+analysis/data/
+
+# Third-party news content (copied Facebook posts), kept local only
+*.docx
+
+# Python / OS clutter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+Thumbs.db
+desktop.ini
+.DS_Store

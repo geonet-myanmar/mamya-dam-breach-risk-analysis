@@ -1,0 +1,4 @@
+scenario,flooded_km2,pop_in_extent,pop_in_extent_plus150m,pop_within150m_of_depth_gt_1_5m,villages_flooded,villages_depth_gt_1_5m
+S1,297.0,30512.0,46818.0,43143.0,177,163
+S2,271.0,26625.0,42399.0,38005.0,167,145
+S3,301.0,31986.0,48691.0,45286.0,179,166
